@@ -6,3 +6,6 @@
 BattleBrawl2 is a offline 1vs1 Brawler Game where you punch your enemy to DEATH!!!  
 You will fight an AI or another Player in an Arena. The goal is to defeat the opponent by reducing his HP to zero.  
 Your character can move left, right and jump. He interacts with his opponent by punching, which lowers his HP. 
+- [ ] Create Game State
+- [ ] Create Window
+- [ ] Do Game Loop
