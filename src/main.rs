@@ -17,16 +17,16 @@ fn handle_input(player_pos: &mut Box<(f32,f32)>, player_vel: &mut Box<(f32,f32)>
     }
     if is_key_down(KeyCode::Down) && player_pos.1 < ARENA.get_floor_height() - PLAYER.height + 75.{
         // todo: dash down event
-        player_vel.1 += PLAYER.dash;
+        player_vel.1 += PLAYER.get_dash();
     }
     if (is_key_down(KeyCode::Up) || is_key_down(KeyCode::Space)) && player_pos.1 > 0. + PLAYER.height && ARENA.player_grounded(player_pos){
         // todo: jump event
-        player_vel.1 -= PLAYER.base_jump;
+        player_vel.1 -= PLAYER.get_jump();
     }
 }
 
 fn handle_gravity(player_vel: &mut Box<(f32,f32)>) {
-    player_vel.1+= ARENA.gravity;
+    player_vel.1+= ARENA.get_gravity();
 }
 
 fn apply_velocity(player_vel: &mut Box<(f32,f32)>, player_pos: &mut Box<(f32,f32)>) {
