@@ -1,4 +1,4 @@
-use macroquad::prelude::*;
+use macroquad::{prelude::*};
 
 
 
@@ -6,24 +6,69 @@ pub mod config;
 use config::*;
 
 
-
+/// player_pos = Position of player (x,y)
+/// player_vel = Velocity of player (x pixels per second, y pixesl per second)
+/// 
+/// if Arrow Right key is pressed: x velocity equals base speed (moving to the right)
+///     if player out of boarder: Player position = next to boarder + velocity canceled
+/// if Arrow Left key is pressed: x velocity equals minus base speed (moving to the left)
+///     if player out of boarder: Player position = next to boarder + velocity canceled
+/// none of these two pressed: x velocity = 0 (not moving)
+/// 
+/// NOTE: no differenciation between grounded and airborne yet
+/// TODO: Implement something to track if certain air movement is possible
+/// TODO: Implement air left/air right
+/// TODO: Implement dive
+/// TODO: Implement double Jump
+/// TODO: Implement air dash
 fn handle_input(player_pos: &mut Box<(f32,f32)>, player_vel: &mut Box<(f32,f32)>) {
-    if is_key_down(KeyCode::Right) && player_pos.0 < screen_width() - PLAYER.width {
-        player_pos.0 += PLAYER.get_player_speed();
+    // GroundMovement
+    //Move right: is alright
+    if is_key_down(KeyCode::Right){
+        if player_pos.0 < screen_width() - PLAYER.width {
+            player_vel.0 = PLAYER.get_player_speed();
+        } else {
+            player_vel.0 = 0.;
+            player_pos.0 = screen_width() - PLAYER.width;
+        }
     }
-    if is_key_down(KeyCode::Left) && player_pos.0 > 0. + PLAYER.width {
-        // todo move left event
-        player_pos.0 -= PLAYER.get_player_speed();
+    // Move left: is alright
+    if is_key_down(KeyCode::Left) {
+        if player_pos.0 > PLAYER.width {
+            player_vel.0 = -PLAYER.get_player_speed();
+        } else {
+            player_vel.0 = 0.;
+            player_pos.0 = PLAYER.width;
+        }
+    } 
+    if !is_key_down(KeyCode::Left) && !is_key_down(KeyCode::Right) {
+        player_vel.0 = 0.;
     }
-    if is_key_down(KeyCode::Down) && player_pos.1 < ARENA.get_floor_height() - PLAYER.height + 75.{
-        // todo: dash down event
-        player_vel.1 += PLAYER.get_dash();
-    }
+    //Jump (TODO: clean up)
     if (is_key_down(KeyCode::Up) || is_key_down(KeyCode::Space)) && player_pos.1 > 0. + PLAYER.height && ARENA.player_grounded(player_pos){
-        // todo: jump event
         player_vel.1 -= PLAYER.get_jump();
     }
+    //TODO: implement DashOnGround
+
+    // Air movement
+    if is_key_pressed(KeyCode::Down) && !ARENA.player_grounded(player_pos){
+        if player_pos.1 < ARENA.get_floor_height() - PLAYER.height {
+            player_vel.1 = 0.;
+            player_vel.1 = PLAYER.get_dive();
+        } else {
+            player_vel.1 = 0.;
+            player_pos.1 = ARENA.get_floor_height() - PLAYER.height;
+        }
+    }
+    //TODO: Implement something to track if certain air movement is possible
+    //TODO: Implement air left/air right
+    //TODO: Implement dive
+    //TODO: Implement double Jump
+    //TODO: Implement air dash
+    
+    
 }
+
 
 fn handle_gravity(player_vel: &mut Box<(f32,f32)>) {
     player_vel.1+= ARENA.get_gravity();
@@ -46,7 +91,7 @@ async fn main() {
     loop {
         // create background
         clear_background(DARKGRAY);
-        draw_line(0., ARENA.get_floor_height(), screen_width(), ARENA.get_floor_height(), 5., BLACK);
+        draw_line(0., ARENA.get_floor_height() - 80., screen_width(), ARENA.get_floor_height() - 80., 5., BLACK);
 
         // handle/process input
 

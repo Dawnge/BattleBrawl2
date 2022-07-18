@@ -43,6 +43,7 @@ If the player is airbone, he will accelerate airbone_acceleration amount instead
 basic_velocity: Box<(f32,f32)>
 action_velocity: Box<(f32,f32)> 
 player_velocity: Box<(f32,f32)> = basic_velocity + action_velocity
+player_position: Box<(f32,f32)> += player_velocity;
 
 #### Jump
 Adds a constant upwards velocity to the action_velocity, we implement a double jump. The first jump can only be executed if the player is grounded. The second jump can only be executed when the player is airbone, it sets the downwards action_velocity to zero and adds second_jump to the upwards velocity.

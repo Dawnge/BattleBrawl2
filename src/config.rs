@@ -1,13 +1,14 @@
 use macroquad::prelude::*;
 
-/// Ich will das in der Documentation sehen!
+
 pub struct PlayerConfig {
     pub base_speed: f32,
     pub width: f32,
     pub height: f32,
     pub start_pos: (f32,f32),
     pub jump: f32,
-    pub dash: f32,
+    pub second_jump: f32,
+    pub dive: f32,
 }
 pub const PLAYER: PlayerConfig = PlayerConfig {
     base_speed: 500.,
@@ -15,7 +16,8 @@ pub const PLAYER: PlayerConfig = PlayerConfig {
     height: 15.,
     start_pos: (0.5f32, 0.5f32),
     jump: 1000.,
-    dash: 200.,
+    second_jump: 700.,
+    dive: 700.,
 };
 
 impl PlayerConfig {
@@ -28,8 +30,11 @@ impl PlayerConfig {
     pub fn get_jump(&self) -> f32 {
         self.jump / get_fps() as f32
     }
-    pub fn get_dash(&self) -> f32 {
-        self.dash / get_fps() as f32
+    pub fn get_second_jump(&self) -> f32 {
+        self.second_jump / get_fps() as f32
+    }
+    pub fn get_dive(&self) -> f32 {
+        self.dive / get_fps() as f32
     }
 }
 
