@@ -1,78 +1,49 @@
 use macroquad::prelude::*;
 
-fn window_conf() -> Conf {
-    Conf {
-        window_title: "BattleBrawl2 Game".to_owned(),
-        fullscreen: false,
-        window_height: 720,
-        window_width: 1280,
-        window_resizable: false,
-        ..Default::default()
+
+
+pub mod config;
+use config::*;
+
+
+fn handle_input(mut player_pos: &mut Box<(f32,f32)>) {
+    if is_key_down(KeyCode::Right) && player_pos.0 < screen_width() - PLAYER.width {
+        player_pos.0 += PLAYER.speed;
+    }
+    if is_key_down(KeyCode::Left) && player_pos.0 > 0. + PLAYER.width {
+        // todo move left event
+        player_pos.0 -= PLAYER.speed;
+    }
+    if is_key_down(KeyCode::Down) && player_pos.1 < ARENA.get_floor_height() - PLAYER.height + 75.{
+        // todo: dash down event
+        player_pos.1 += PLAYER.speed;
+    }
+    if (is_key_down(KeyCode::Up) || is_key_down(KeyCode::Space)) && player_pos.1 > 0. + PLAYER.height{
+        // todo: jump event
+        player_pos.1 -= PLAYER.speed;
     }
 }
-
-pub fn move_player(mut player_pos: (f32,f32), player_movement: Vec<PlayerMoveEvent>) -> (f32, f32) {
-    // handle physics
-    if player_movement.contains(&PlayerMoveEvent::Right) {
-        player_pos.0 += 1.;
-    }
-
-    player_pos
-
-}
-
-#[derive(PartialEq)]
-pub enum PlayerMoveEvent {
-    Right,
-    Left,
-    Down,
-    Up,
-}
-
 #[macroquad::main(window_conf, "BasicShapes")]
 async fn main() {
-    let mut x = screen_width() / 2.0;
-    let mut y = screen_height() / 2.0;
-    let floor: f32 = 0.8*screen_height();
-    let player_height = 15.0;
-    let player_width = player_height;
-    let movement_speed = 10.0;
+        // Gamestate
+    let mut player_pos: Box<(f32, f32)> = PLAYER.get_start_pos();
 
-    // Gamestate
-    let mut player_movement: Vec<PlayerMoveEvent> =  vec![];
-    let mut player_pos: (f32, f32) = (screen_width() / 2.0, screen_height() / 2.0);
-    
 
     loop {
         // create background
         clear_background(DARKGRAY);
-        draw_line(0., floor, screen_width(), floor, 5., BLACK);
+        draw_line(0., ARENA.get_floor_height(), screen_width(), ARENA.get_floor_height(), 5., BLACK);
 
         // handle input
-        if is_key_down(KeyCode::Right) && x < screen_width() - player_width {
-            // todo: move right event
-            // state.player_movement.insert(PlayerMoveEvent::Right);
-            x += movement_speed;
-        }
-        if is_key_down(KeyCode::Left) && x > 0. + player_width {
-            // todo move left event
-            x -= movement_speed;
-        }
-        if is_key_down(KeyCode::Down) && y < floor - player_height + 75. /* (thickness - 1)/2 = 2 */ {
-            // todo: dash down event
-            y += movement_speed;
-        }
-        if (is_key_down(KeyCode::Up) || is_key_down(KeyCode::Space)) && y > 0. + player_height{
-            // todo: jump event
-            y -= movement_speed;
-        }
+
+        handle_input(&mut player_pos);
 
         // TODO
         // move_player(player_pos, player_movement);
         // do_player_physics()
 
         // render
-        draw_circle(x, y, player_height, YELLOW);
+        draw_circle(player_pos.0, player_pos.1, PLAYER.height, YELLOW);
         
 
         // debug stuff
