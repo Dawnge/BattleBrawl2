@@ -24,7 +24,7 @@ use config::*;
 fn handle_input(player_pos: &mut Box<(f32,f32)>, player_vel: &mut Box<(f32,f32)>) {
     // GroundMovement
     //Move right: is alright
-    if is_key_down(KeyCode::Right){
+    if is_key_down(KeyCode::Right) && ARENA.player_grounded(player_pos){
         if player_pos.0 < screen_width() - PLAYER.width {
             player_vel.0 = PLAYER.get_player_speed();
         } else {
@@ -33,7 +33,7 @@ fn handle_input(player_pos: &mut Box<(f32,f32)>, player_vel: &mut Box<(f32,f32)>
         }
     }
     // Move left: is alright
-    if is_key_down(KeyCode::Left) {
+    if is_key_down(KeyCode::Left) && ARENA.player_grounded(player_pos){
         if player_pos.0 > PLAYER.width {
             player_vel.0 = -PLAYER.get_player_speed();
         } else {
@@ -45,33 +45,56 @@ fn handle_input(player_pos: &mut Box<(f32,f32)>, player_vel: &mut Box<(f32,f32)>
         player_vel.0 = 0.;
     }
     //Jump (TODO: clean up)
-    if (is_key_down(KeyCode::Up) || is_key_down(KeyCode::Space)) && player_pos.1 > 0. + PLAYER.height && ARENA.player_grounded(player_pos){
+    if (is_key_down(KeyCode::Up) || is_key_down(KeyCode::Space)) && ARENA.player_grounded(player_pos){
         player_vel.1 -= PLAYER.get_jump();
     }
     //TODO: implement DashOnGround
 
     // Air movement
+
+    //TODO: Implement something to track if certain air movement is possible
+    //TODO: Implement air left/air right
+    //Move right: is alright
+    if is_key_down(KeyCode::Right) && !ARENA.player_grounded(player_pos) && player_vel.0 <= PLAYER.get_player_speed(){
+            player_vel.0 += PLAYER.get_aribone_acceleration();
+    }
+    // Move left: is alright
+    if is_key_down(KeyCode::Left) && !ARENA.player_grounded(player_pos) && player_vel.0 >= -PLAYER.get_player_speed(){
+            player_vel.0 -= PLAYER.get_aribone_acceleration();
+    } 
+    //TODO: Implement dive
     if is_key_pressed(KeyCode::Down) && !ARENA.player_grounded(player_pos){
         if player_pos.1 < ARENA.get_floor_height() - PLAYER.height {
-            player_vel.1 = 0.;
             player_vel.1 = PLAYER.get_dive();
         } else {
             player_vel.1 = 0.;
             player_pos.1 = ARENA.get_floor_height() - PLAYER.height;
         }
     }
-    //TODO: Implement something to track if certain air movement is possible
-    //TODO: Implement air left/air right
-    //TODO: Implement dive
     //TODO: Implement double Jump
+    if is_key_pressed(KeyCode::Up) && !ARENA.player_grounded(player_pos) {
+        player_vel.1 = -PLAYER.get_second_jump();
+    }
     //TODO: Implement air dash
     
     
 }
-
+/// checks if the player is out of screen to the left or the right and if so:
+/// sets Player position to the position of the corresponding edge of the screen and sets Player velocity to 0
+/// Function is called before apply_velocity to player is called.
+fn check_boarders(player_pos: &mut Box<(f32,f32)>, player_vel: &mut Box<(f32,f32)>) {
+    if player_pos.0 < PLAYER.width {
+        player_vel.0 = 0.;
+        player_pos.0 = PLAYER.width;
+    }
+    if player_pos.0 > screen_width() - PLAYER.width {
+        player_vel.0 = 0.;
+        player_pos.0 = screen_width() - PLAYER.width;
+    }
+}
 
 fn handle_gravity(player_vel: &mut Box<(f32,f32)>) {
-    player_vel.1+= ARENA.get_gravity();
+    player_vel.1 += ARENA.get_gravity();
 }
 
 fn apply_velocity(player_vel: &mut Box<(f32,f32)>, player_pos: &mut Box<(f32,f32)>) {
@@ -96,6 +119,7 @@ async fn main() {
         // handle/process input
 
         handle_input(&mut player_pos, &mut player_vel);
+        check_boarders(&mut player_pos, &mut player_vel);
         apply_velocity(&mut player_vel, &mut player_pos);
 
         //update

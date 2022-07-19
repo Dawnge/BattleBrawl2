@@ -9,6 +9,7 @@ pub struct PlayerConfig {
     pub jump: f32,
     pub second_jump: f32,
     pub dive: f32,
+    pub airbone_acceleleration: f32,
 }
 pub const PLAYER: PlayerConfig = PlayerConfig {
     base_speed: 500.,
@@ -18,6 +19,7 @@ pub const PLAYER: PlayerConfig = PlayerConfig {
     jump: 1000.,
     second_jump: 700.,
     dive: 700.,
+    airbone_acceleleration: 50.,
 };
 
 impl PlayerConfig {
@@ -35,6 +37,9 @@ impl PlayerConfig {
     }
     pub fn get_dive(&self) -> f32 {
         self.dive / get_fps() as f32
+    }
+    pub fn get_aribone_acceleration(&self) -> f32 {
+        self.airbone_acceleleration / get_fps() as f32
     }
 }
 
