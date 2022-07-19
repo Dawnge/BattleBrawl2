@@ -1,9 +1,12 @@
+
 use macroquad::{prelude::*};
 
 
 
 pub mod config;
 use config::*;
+
+
 
 
 /// player_pos = Position of player (x,y)
@@ -24,59 +27,70 @@ use config::*;
 fn handle_input(player_pos: &mut Box<(f32,f32)>, player_vel: &mut Box<(f32,f32)>) {
     // GroundMovement
     //Move right: is alright
-    if is_key_down(KeyCode::Right) && ARENA.player_grounded(player_pos){
-        if player_pos.0 < screen_width() - PLAYER.width {
-            player_vel.0 = PLAYER.get_player_speed();
-        } else {
-            player_vel.0 = 0.;
-            player_pos.0 = screen_width() - PLAYER.width;
-        }
-    }
-    // Move left: is alright
-    if is_key_down(KeyCode::Left) && ARENA.player_grounded(player_pos){
-        if player_pos.0 > PLAYER.width {
-            player_vel.0 = -PLAYER.get_player_speed();
-        } else {
-            player_vel.0 = 0.;
-            player_pos.0 = PLAYER.width;
-        }
-    } 
-    if !is_key_down(KeyCode::Left) && !is_key_down(KeyCode::Right) {
-        player_vel.0 = 0.;
-    }
-    //Jump (TODO: clean up)
-    if (is_key_down(KeyCode::Up) || is_key_down(KeyCode::Space)) && ARENA.player_grounded(player_pos){
-        player_vel.1 -= PLAYER.get_jump();
-    }
+    
     //TODO: implement DashOnGround
 
     // Air movement
+    //TODO: Implement dive
 
     //TODO: Implement something to track if certain air movement is possible
     //TODO: Implement air left/air right
-    //Move right: is alright
-    if is_key_down(KeyCode::Right) && !ARENA.player_grounded(player_pos) && player_vel.0 <= PLAYER.get_player_speed(){
-            player_vel.0 += PLAYER.get_aribone_acceleration();
-    }
-    // Move left: is alright
-    if is_key_down(KeyCode::Left) && !ARENA.player_grounded(player_pos) && player_vel.0 >= -PLAYER.get_player_speed(){
-            player_vel.0 -= PLAYER.get_aribone_acceleration();
-    } 
-    //TODO: Implement dive
-    if is_key_pressed(KeyCode::Down) && !ARENA.player_grounded(player_pos){
-        if player_pos.1 < ARENA.get_floor_height() - PLAYER.height {
-            player_vel.1 = PLAYER.get_dive();
-        } else {
-            player_vel.1 = 0.;
-            player_pos.1 = ARENA.get_floor_height() - PLAYER.height;
+    //TODO: Implement air dash
+    //TODO: Implement double Jump
+
+    
+    match ARENA.player_grounded(player_pos) {
+        true => {
+            // Player is grounded, handle basic movement and jump
+
+            // Basic Movement
+            match (is_key_down(KeyCode::Right), is_key_down(KeyCode::Left)) {
+                (true, false) => { // Move Right
+                    player_vel.0 = PLAYER.get_player_speed();
+                }
+                (false, true) => { // Move Left
+                    player_vel.0 = -PLAYER.get_player_speed();
+                }
+                _ => { // Stand still or Right+Left
+                    player_vel.0 = 0.;
+                }
+            }
+
+            // Jump 
+            if is_key_down(KeyCode::Up) {
+                player_vel.1 -= PLAYER.get_jump();
+            }
+
+            // Dash Right
+
+            // Dash Left
+
+        }
+        false => {
+            // Player is airbone
+
+            // Move right: is alright
+            if is_key_down(KeyCode::Right) && player_vel.0 <= PLAYER.get_player_speed(){
+                player_vel.0 += PLAYER.get_aribone_acceleration();
+            }
+            // Move left: is alright
+            if is_key_down(KeyCode::Left) && player_vel.0 >= -PLAYER.get_player_speed(){
+                    player_vel.0 -= PLAYER.get_aribone_acceleration();
+            } 
+            if is_key_pressed(KeyCode::Down) {
+                if player_pos.1 < ARENA.get_floor_height() - PLAYER.height {
+                    player_vel.1 = PLAYER.get_dive();
+                } else {
+                    player_vel.1 = 0.;
+                    player_pos.1 = ARENA.get_floor_height() - PLAYER.height;
+                }
+            }
+            if is_key_pressed(KeyCode::Up) {
+                player_vel.1 = -PLAYER.get_second_jump();
+            }
         }
     }
-    //TODO: Implement double Jump
-    if is_key_pressed(KeyCode::Up) && !ARENA.player_grounded(player_pos) {
-        player_vel.1 = -PLAYER.get_second_jump();
-    }
-    //TODO: Implement air dash
-    
+
     
 }
 /// checks if the player is out of screen to the left or the right and if so:
@@ -109,6 +123,8 @@ fn apply_velocity(player_vel: &mut Box<(f32,f32)>, player_pos: &mut Box<(f32,f32
 async fn main() {
         // Gamestate
     let mut player_pos: Box<(f32, f32)> = PLAYER.get_start_pos();
+
+
     let mut player_vel: Box<(f32, f32)> = Box::new((0.,0.));
 
     loop {
@@ -117,6 +133,8 @@ async fn main() {
         draw_line(0., ARENA.get_floor_height() - 80., screen_width(), ARENA.get_floor_height() - 80., 5., BLACK);
 
         // handle/process input
+
+        // handle_input(&mut player_vel)
 
         handle_input(&mut player_pos, &mut player_vel);
         check_boarders(&mut player_pos, &mut player_vel);
