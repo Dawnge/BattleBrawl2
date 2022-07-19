@@ -68,3 +68,7 @@ If the player is airbone, Dash sets the player's horizontal velocity to zero. An
 - player_velocity
 - basic_velocity
 - action_velocity
+
+
+
+Player has orientation. Player has position. Player has grounded/airbone state

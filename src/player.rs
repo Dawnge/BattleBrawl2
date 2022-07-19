@@ -1,0 +1,97 @@
+use macroquad::prelude::*;
+
+use crate::config::*;
+use crate::input::*;
+
+pub enum Orientation {
+    Right,
+    Left
+}
+
+pub struct Player {
+    pub position: (f32, f32),
+    pub velocity: (f32, f32),
+    pub orientation: Orientation,
+    pub grounded: bool,
+    pub can_jump: bool, // player can still jump
+    pub can_dive: bool,
+}
+
+impl Player {
+    pub fn new() -> Self {
+        Self {
+            position: PLAYER.get_start_pos(), 
+            velocity: (0., 0.),
+            orientation: Orientation::Right, 
+            grounded: false, 
+            can_jump: true, 
+            can_dive: true,
+        }
+    }
+
+    pub fn update(&mut self, input: &Vec<Input>) {
+        // apply basic movement directly and update velocity.
+        for i in input {
+            match *i {
+                Input::Right => {
+                    self.position.0 += PLAYER.get_player_speed();
+                    self.orientation = Orientation::Right;
+                },
+                Input::Left => {
+                    self.position.0 -= PLAYER.get_player_speed();
+                    self.orientation = Orientation::Left;
+                },
+                Input::Jump => {
+                    if self.grounded {
+                        self.velocity.1 = -PLAYER.get_jump();
+                        self.grounded = false; // we jump from the ground -> we are no longer grounded.
+                        self.can_dive = true; // we are no longer grounded -> we can dive.
+                    } else if self.can_jump {
+                        self.velocity.1 = -PLAYER.get_second_jump();
+                        self.can_jump = false; // can only jump once when airbone.
+                    }
+                },
+                Input::Dive => {
+                    if self.can_dive {
+                        self.velocity.1 = PLAYER.get_dive();
+                        self.can_dive = false; // can only dive once, resets when grounded.
+                    }
+                },
+            }
+        }
+
+        // Apply Physics: Drag, Gravity
+        if self.velocity.0 > 0. {
+            self.velocity.0 = (self.velocity.0-ARENA.get_drag()).max(0.);
+        } else if self.velocity.0 < 0. {
+            self.velocity.0 = (self.velocity.0+ARENA.get_drag()).min(0.)
+        }
+        self.velocity.1 += ARENA.get_gravity();
+
+
+        // Apply velocity to position + boundary checks.
+        let mut x = self.position.0 + self.velocity.0;
+        let mut y = self.position.1 + self.velocity.1;
+        if x < PLAYER.width {
+            x = PLAYER.width;
+        } else if x > screen_width() - PLAYER.width {
+            x = screen_width() - PLAYER.width;
+        }
+        if y > ARENA.get_floor_height() - PLAYER.height {
+            y = ARENA.get_floor_height() - PLAYER.height;
+        } else if y < PLAYER.height {
+            y =  PLAYER.height;
+        }
+        self.position.0 = x;
+        self.position.1 = y;
+
+        // Update Player state, check if we are grounded after applying the velocity and update state.
+        if ARENA.player_grounded(&self.position) {
+            self.grounded = true;
+            self.can_jump = true;
+            self.can_dive = false;
+            self.velocity.0 = 0.; // reset all horizontal velocity
+            self.velocity.1 = 0.; // reset all vertical velocity
+        }
+    }
+}

@@ -23,8 +23,8 @@ pub const PLAYER: PlayerConfig = PlayerConfig {
 };
 
 impl PlayerConfig {
-    pub fn get_start_pos(&self) -> Box<(f32, f32)> {
-        Box::new((self.start_pos.0 * screen_width(), self.start_pos.1 * screen_height()))
+    pub fn get_start_pos(&self) -> (f32, f32) {
+        (self.start_pos.0 * screen_width(), self.start_pos.1 * screen_height())
     }
     pub fn get_player_speed(&self) -> f32 {
         self.base_speed / get_fps() as f32
@@ -46,20 +46,25 @@ impl PlayerConfig {
 pub struct ArenaConfig {
     pub floor_height: f32,
     pub gravity: f32,
+    pub drag: f32,
 }
 pub const ARENA: ArenaConfig = ArenaConfig {
     floor_height: 0.8,
-    gravity: 30.,
+    gravity: 10.,
+    drag: 20.,
 };
 impl ArenaConfig {
     pub fn get_floor_height(&self) -> f32 {
         self.floor_height * screen_height()
     }
     pub fn player_grounded(&self, player_pos: &(f32,f32)) -> bool {
-        player_pos.1 >= self.get_floor_height()-PLAYER.height
+        player_pos.1 >= self.get_floor_height() - PLAYER.height
     }
     pub fn get_gravity(&self) -> f32{
-        self.gravity / get_fps()as f32
+        self.gravity / get_fps() as f32
+    }
+    pub fn get_drag(&self) -> f32{
+        self.drag / get_fps() as f32
     }
 }
 

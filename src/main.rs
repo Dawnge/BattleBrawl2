@@ -1,158 +1,53 @@
 
-use macroquad::{prelude::*};
-
-
+use macroquad::prelude::*;
 
 pub mod config;
 use config::*;
 
+pub mod input;
+use input::*;
+
+pub mod player;
+use player::*;
 
 
-
-/// player_pos = Position of player (x,y)
-/// player_vel = Velocity of player (x pixels per second, y pixesl per second)
-/// 
-/// if Arrow Right key is pressed: x velocity equals base speed (moving to the right)
-///     if player out of boarder: Player position = next to boarder + velocity canceled
-/// if Arrow Left key is pressed: x velocity equals minus base speed (moving to the left)
-///     if player out of boarder: Player position = next to boarder + velocity canceled
-/// none of these two pressed: x velocity = 0 (not moving)
-/// 
-/// NOTE: no differenciation between grounded and airborne yet
-/// TODO: Implement something to track if certain air movement is possible
-/// TODO: Implement air left/air right
-/// TODO: Implement dive
-/// TODO: Implement double Jump
-/// TODO: Implement air dash
-fn handle_input(player_pos: &mut Box<(f32,f32)>, player_vel: &mut Box<(f32,f32)>) {
-    // GroundMovement
-    //Move right: is alright
-    
-    //TODO: implement DashOnGround
-
-    // Air movement
-    //TODO: Implement dive
-
-    //TODO: Implement something to track if certain air movement is possible
-    //TODO: Implement air left/air right
-    //TODO: Implement air dash
-    //TODO: Implement double Jump
-
-    
-    match ARENA.player_grounded(player_pos) {
-        true => {
-            // Player is grounded, handle basic movement and jump
-
-            // Basic Movement
-            match (is_key_down(KeyCode::Right), is_key_down(KeyCode::Left)) {
-                (true, false) => { // Move Right
-                    player_vel.0 = PLAYER.get_player_speed();
-                }
-                (false, true) => { // Move Left
-                    player_vel.0 = -PLAYER.get_player_speed();
-                }
-                _ => { // Stand still or Right+Left
-                    player_vel.0 = 0.;
-                }
-            }
-
-            // Jump 
-            if is_key_down(KeyCode::Up) {
-                player_vel.1 -= PLAYER.get_jump();
-            }
-
-            // Dash Right
-
-            // Dash Left
-
-        }
-        false => {
-            // Player is airbone
-
-            // Move right: is alright
-            if is_key_down(KeyCode::Right) && player_vel.0 <= PLAYER.get_player_speed(){
-                player_vel.0 += PLAYER.get_aribone_acceleration();
-            }
-            // Move left: is alright
-            if is_key_down(KeyCode::Left) && player_vel.0 >= -PLAYER.get_player_speed(){
-                    player_vel.0 -= PLAYER.get_aribone_acceleration();
-            } 
-            if is_key_pressed(KeyCode::Down) {
-                if player_pos.1 < ARENA.get_floor_height() - PLAYER.height {
-                    player_vel.1 = PLAYER.get_dive();
-                } else {
-                    player_vel.1 = 0.;
-                    player_pos.1 = ARENA.get_floor_height() - PLAYER.height;
-                }
-            }
-            if is_key_pressed(KeyCode::Up) {
-                player_vel.1 = -PLAYER.get_second_jump();
-            }
-        }
-    }
-
-    
-}
-/// checks if the player is out of screen to the left or the right and if so:
-/// sets Player position to the position of the corresponding edge of the screen and sets Player velocity to 0
-/// Function is called before apply_velocity to player is called.
-fn check_boarders(player_pos: &mut Box<(f32,f32)>, player_vel: &mut Box<(f32,f32)>) {
-    if player_pos.0 < PLAYER.width {
-        player_vel.0 = 0.;
-        player_pos.0 = PLAYER.width;
-    }
-    if player_pos.0 > screen_width() - PLAYER.width {
-        player_vel.0 = 0.;
-        player_pos.0 = screen_width() - PLAYER.width;
-    }
-}
-
-fn handle_gravity(player_vel: &mut Box<(f32,f32)>) {
-    player_vel.1 += ARENA.get_gravity();
-}
-
-fn apply_velocity(player_vel: &mut Box<(f32,f32)>, player_pos: &mut Box<(f32,f32)>) {
-    player_pos.1 += player_vel.1;
-    player_pos.0 += player_vel.0;
-    if ARENA.player_grounded(player_pos) {
-        player_pos.1 = ARENA.get_floor_height() - PLAYER.height;
-        player_vel.1 = 0.;
-    }
-}
 #[macroquad::main(window_conf, "BasicShapes")]
 async fn main() {
-        // Gamestate
-    let mut player_pos: Box<(f32, f32)> = PLAYER.get_start_pos();
+    // Gamestate
 
+    let mut player: Player = Player::new();
 
-    let mut player_vel: Box<(f32, f32)> = Box::new((0.,0.));
 
     loop {
+        // input
+        let inputs: Vec<Input> = get_input();
+
+        // logic
+        player.update(&inputs);
+        
+
+        // render
         // create background
         clear_background(DARKGRAY);
         draw_line(0., ARENA.get_floor_height() - 80., screen_width(), ARENA.get_floor_height() - 80., 5., BLACK);
+        // draw player
+        draw_circle(player.position.0, player.position.1, PLAYER.height, YELLOW);
+        match player.orientation {
+            Orientation::Right => {
+                draw_line(player.position.0, player.position.1, player.position.0 + PLAYER.width, player.position.1, 3., RED)
+            },
+            Orientation::Left => {
+                draw_line(player.position.0, player.position.1, player.position.0 - PLAYER.width, player.position.1, 3., RED)
 
-        // handle/process input
-
-        // handle_input(&mut player_vel)
-
-        handle_input(&mut player_pos, &mut player_vel);
-        check_boarders(&mut player_pos, &mut player_vel);
-        apply_velocity(&mut player_vel, &mut player_pos);
-
-        //update
-        handle_gravity(&mut player_vel);
-        
-        // TODO
-        // move_player(player_pos, player_movement);
-        // do_player_physics()
-
-        // render
-        draw_circle(player_pos.0, player_pos.1, PLAYER.height, YELLOW);
-        
+            }
+        }
 
         // debug stuff
         draw_text(format!("FPS {}", get_fps()).as_str(), 0.0, 10.0, 20.0, WHITE);
+        draw_text(format!("Player.p=(x={:.2}, y={:.2})", player.position.0, player.position.1).as_str(), 0.0, 30.0, 20.0, WHITE);
+        draw_text(format!("Player.v=(x={:.2}, y={:.2})", player.velocity.0 * get_fps() as f32, player.velocity.1 * get_fps() as f32).as_str(), 0.0, 50.0, 20.0, WHITE);
+
+
 
         next_frame().await
     }
