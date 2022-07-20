@@ -15,37 +15,33 @@ use player::*;
 async fn main() {
     // Gamestate
 
-    let mut player: Player = Player::new();
+    let mut player1: Player = Player::new(ARENA.player_1_start());
+    let mut player2: Player = Player::new(ARENA.player_2_start());
 
 
     loop {
         // input
-        let inputs: Vec<Input> = get_input();
+        let inputs_player_1: Vec<Input> = get_input_player1();
+        let inputs_player_2: Vec<Input> = get_input_player2();
 
         // logic
-        player.update(&inputs);
-        
+        player1.update(&inputs_player_1);
+        player2.update(&inputs_player_2);
+
 
         // render
         // create background
         clear_background(DARKGRAY);
         draw_line(0., ARENA.get_floor_height() - 80., screen_width(), ARENA.get_floor_height() - 80., 5., BLACK);
-        // draw player
-        draw_circle(player.position.0, player.position.1, PLAYER.height, YELLOW);
-        match player.orientation {
-            Orientation::Right => {
-                draw_line(player.position.0, player.position.1, player.position.0 + PLAYER.width, player.position.1, 3., RED)
-            },
-            Orientation::Left => {
-                draw_line(player.position.0, player.position.1, player.position.0 - PLAYER.width, player.position.1, 3., RED)
-
-            }
-        }
+        
+        // render player
+        player1.render(YELLOW);
+        player2.render(GREEN);
 
         // debug stuff
         draw_text(format!("FPS {}", get_fps()).as_str(), 0.0, 10.0, 20.0, WHITE);
-        draw_text(format!("Player.p=(x={:.2}, y={:.2})", player.position.0, player.position.1).as_str(), 0.0, 30.0, 20.0, WHITE);
-        draw_text(format!("Player.v=(x={:.2}, y={:.2})", player.velocity.0 * get_fps() as f32, player.velocity.1 * get_fps() as f32).as_str(), 0.0, 50.0, 20.0, WHITE);
+        draw_text(format!("Player.p=(x={:.2}, y={:.2})", player1.position.0, player1.position.1).as_str(), 0.0, 30.0, 20.0, WHITE);
+        draw_text(format!("Player.v=(x={:.2}, y={:.2})", player1.velocity.0 * get_fps() as f32, player1.velocity.1 * get_fps() as f32).as_str(), 0.0, 50.0, 20.0, WHITE);
 
 
 

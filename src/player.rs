@@ -19,9 +19,9 @@ pub struct Player {
 }
 
 impl Player {
-    pub fn new() -> Self {
+    pub fn new(position: (f32, f32)) -> Self {
         Self {
-            position: PLAYER.get_start_pos(), 
+            position, 
             velocity: (0., 0.),
             orientation: Orientation::Right, 
             grounded: false, 
@@ -115,6 +115,19 @@ impl Player {
             self.dash_duration -= 1;
             if self.dash_duration == 0 {
                 self.velocity.0 = 0.;
+            }
+        }
+    }
+
+    pub fn render(&self, color: Color) {
+        draw_circle(self.position.0, self.position.1, PLAYER.height, color);
+        match self.orientation {
+            Orientation::Right => {
+                draw_line(self.position.0, self.position.1, self.position.0 + PLAYER.width, self.position.1, 3., RED)
+            },
+            Orientation::Left => {
+                draw_line(self.position.0, self.position.1, self.position.0 - PLAYER.width, self.position.1, 3., RED)
+
             }
         }
     }

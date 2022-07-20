@@ -28,9 +28,6 @@ pub const PLAYER: PlayerConfig = PlayerConfig {
 };
 
 impl PlayerConfig {
-    pub fn get_start_pos(&self) -> (f32, f32) {
-        (self.start_pos.0 * screen_width(), self.start_pos.1 * screen_height())
-    }
     pub fn get_player_speed(&self) -> f32 {
         self.base_speed / get_fps() as f32
     }
@@ -76,6 +73,12 @@ impl ArenaConfig {
     }
     pub fn get_drag(&self) -> f32{
         self.drag / get_fps() as f32
+    }
+    pub fn player_1_start(&self) -> (f32,f32) {
+        (0.2*screen_width(), 0.2*screen_height())
+    }
+    pub fn player_2_start(&self) -> (f32,f32) {
+        (0.8*screen_width(), 0.2*screen_height())
     }
 }
 
