@@ -10,6 +10,8 @@ pub struct PlayerConfig {
     pub second_jump: f32,
     pub dive: f32,
     pub airbone_acceleleration: f32,
+    pub dash: f32,
+    pub dash_duration: f32, // seconds
 }
 pub const PLAYER: PlayerConfig = PlayerConfig {
     base_speed: 500.,
@@ -20,6 +22,9 @@ pub const PLAYER: PlayerConfig = PlayerConfig {
     second_jump: 700.,
     dive: 700.,
     airbone_acceleleration: 50.,
+    dash: 2000.,
+    dash_duration: 0.1, // seconds
+
 };
 
 impl PlayerConfig {
@@ -41,6 +46,12 @@ impl PlayerConfig {
     pub fn get_aribone_acceleration(&self) -> f32 {
         self.airbone_acceleleration / get_fps() as f32
     }
+    pub fn get_dash(&self) -> f32 {
+        self.dash / get_fps() as f32
+    }
+    pub fn get_dash_duration(&self) -> u32 {
+        (get_fps() as f32 * self.dash_duration) as u32
+    }
 }
 
 pub struct ArenaConfig {
@@ -51,7 +62,7 @@ pub struct ArenaConfig {
 pub const ARENA: ArenaConfig = ArenaConfig {
     floor_height: 0.8,
     gravity: 10.,
-    drag: 20.,
+    drag: 100.,
 };
 impl ArenaConfig {
     pub fn get_floor_height(&self) -> f32 {

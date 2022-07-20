@@ -15,6 +15,7 @@ pub struct Player {
     pub grounded: bool,
     pub can_jump: bool, // player can still jump
     pub can_dive: bool,
+    pub dash_duration: u32,
 }
 
 impl Player {
@@ -26,6 +27,7 @@ impl Player {
             grounded: false, 
             can_jump: true, 
             can_dive: true,
+            dash_duration: 0,
         }
     }
 
@@ -57,15 +59,31 @@ impl Player {
                         self.can_dive = false; // can only dive once, resets when grounded.
                     }
                 },
+                Input::DashRight => {
+                    if self.dash_duration == 0 { // we are not dashing -> we can dash
+                        self.dash_duration = PLAYER.get_dash_duration();
+                        self.velocity.0 = PLAYER.get_dash();
+                    }
+                },
+                Input::DashLeft => {
+                    if self.dash_duration == 0 { // we are not dashing -> we can dash
+                        self.dash_duration = PLAYER.get_dash_duration();
+                        self.velocity.0 = -PLAYER.get_dash();
+                    }
+                    
+                },
+
             }
         }
 
         // Apply Physics: Drag, Gravity
+        // Horizontal axis, DRAG
         if self.velocity.0 > 0. {
-            self.velocity.0 = (self.velocity.0-ARENA.get_drag()).max(0.);
+            self.velocity.0 = (self.velocity.0 - ARENA.get_drag()).max(0.);
         } else if self.velocity.0 < 0. {
-            self.velocity.0 = (self.velocity.0+ARENA.get_drag()).min(0.)
+            self.velocity.0 = (self.velocity.0 + ARENA.get_drag()).min(0.)
         }
+        // Vertical axis, GRAVITY
         self.velocity.1 += ARENA.get_gravity();
 
 
@@ -90,8 +108,14 @@ impl Player {
             self.grounded = true;
             self.can_jump = true;
             self.can_dive = false;
-            self.velocity.0 = 0.; // reset all horizontal velocity
             self.velocity.1 = 0.; // reset all vertical velocity
+        }
+        // decrement dash_duration if dashing and reset vertical velocity if no longer dashing
+        if self.dash_duration > 0 {
+            self.dash_duration -= 1;
+            if self.dash_duration == 0 {
+                self.velocity.0 = 0.;
+            }
         }
     }
 }
