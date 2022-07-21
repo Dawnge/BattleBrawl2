@@ -68,6 +68,7 @@ impl Player {
                         self.dash_duration = PLAYER.get_dash_duration();
                         self.dash_cooldown = PLAYER.get_dash_cooldown();
                         self.velocity.0 = PLAYER.get_dash();
+                        self.can_dash = false;
                     }
                 },
                 Input::DashLeft => {
@@ -75,6 +76,7 @@ impl Player {
                         self.dash_duration = PLAYER.get_dash_duration();
                         self.dash_cooldown = PLAYER.get_dash_cooldown();
                         self.velocity.0 = -PLAYER.get_dash();
+                        self.can_dash = false;
                     }
                     
                 },
@@ -125,7 +127,6 @@ impl Player {
         }
         // decrement dash_cooldown if dashing and disallow dashing if cooldown is not over
         if self.dash_cooldown > 0 {
-            self.can_dash = false;
             self.dash_cooldown -= 1;
             if self.dash_cooldown == 0 {
                 self.can_dash = true;
