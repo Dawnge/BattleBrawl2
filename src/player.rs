@@ -8,7 +8,7 @@ pub enum Orientation {
     Left
 }
 
-pub struct Player {
+pub struct PlayerMove {
     pub position: (f32, f32),
     pub velocity: (f32, f32),
     pub orientation: Orientation,
@@ -20,7 +20,7 @@ pub struct Player {
     pub dash_cooldown: u32,
 }
 
-impl Player {
+impl PlayerMove {
     pub fn new(position: (f32, f32)) -> Self {
         Self {
             position, 
