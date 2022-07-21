@@ -15,7 +15,9 @@ pub struct Player {
     pub grounded: bool,
     pub can_jump: bool, // player can still jump
     pub can_dive: bool,
+    pub can_dash: bool,
     pub dash_duration: u32,
+    pub dash_cooldown: u32,
 }
 
 impl Player {
@@ -27,7 +29,9 @@ impl Player {
             grounded: false, 
             can_jump: true, 
             can_dive: true,
+            can_dash: true,
             dash_duration: 0,
+            dash_cooldown: 0,
         }
     }
 
@@ -60,14 +64,16 @@ impl Player {
                     }
                 },
                 Input::DashRight => {
-                    if self.dash_duration == 0 { // we are not dashing -> we can dash
+                    if self.can_dash { // we are not dashing -> we can dash
                         self.dash_duration = PLAYER.get_dash_duration();
+                        self.dash_cooldown = PLAYER.get_dash_cooldown();
                         self.velocity.0 = PLAYER.get_dash();
                     }
                 },
                 Input::DashLeft => {
-                    if self.dash_duration == 0 { // we are not dashing -> we can dash
+                    if self.can_dash { // we are not dashing -> we can dash
                         self.dash_duration = PLAYER.get_dash_duration();
+                        self.dash_cooldown = PLAYER.get_dash_cooldown();
                         self.velocity.0 = -PLAYER.get_dash();
                     }
                     
@@ -117,6 +123,15 @@ impl Player {
                 self.velocity.0 = 0.;
             }
         }
+        // decrement dash_cooldown if dashing and disallow dashing if cooldown is not over
+        if self.dash_cooldown > 0 {
+            self.can_dash = false;
+            self.dash_cooldown -= 1;
+            if self.dash_cooldown == 0 {
+                self.can_dash = true;
+            }
+        }
+        
     }
 
     pub fn render(&self, color: Color) {

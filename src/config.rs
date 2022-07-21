@@ -12,6 +12,7 @@ pub struct PlayerConfig {
     pub airbone_acceleleration: f32,
     pub dash: f32,
     pub dash_duration: f32, // seconds
+    pub dash_cooldown: f32, // seconds
 }
 pub const PLAYER: PlayerConfig = PlayerConfig {
     base_speed: 500.,
@@ -24,6 +25,7 @@ pub const PLAYER: PlayerConfig = PlayerConfig {
     airbone_acceleleration: 50.,
     dash: 2000.,
     dash_duration: 0.1, // seconds
+    dash_cooldown: 0.3, //seconds
 
 };
 
@@ -49,6 +51,9 @@ impl PlayerConfig {
     pub fn get_dash_duration(&self) -> u32 {
         (get_fps() as f32 * self.dash_duration) as u32
     }
+    pub fn get_dash_cooldown(&self) -> u32 {
+        (get_fps() as f32 * self.dash_cooldown) as u32
+    }
 }
 
 pub struct ArenaConfig {
@@ -58,8 +63,8 @@ pub struct ArenaConfig {
 }
 pub const ARENA: ArenaConfig = ArenaConfig {
     floor_height: 0.8,
-    gravity: 10.,
-    drag: 100.,
+    gravity: 2000.,
+    drag: 1000.,
 };
 impl ArenaConfig {
     pub fn get_floor_height(&self) -> f32 {
@@ -69,10 +74,10 @@ impl ArenaConfig {
         player_pos.1 >= self.get_floor_height() - PLAYER.height
     }
     pub fn get_gravity(&self) -> f32{
-        self.gravity / get_fps() as f32
+        self.gravity / (get_fps() as f32 * get_fps() as f32)
     }
     pub fn get_drag(&self) -> f32{
-        self.drag / get_fps() as f32
+        self.drag / (get_fps() as f32 * get_fps() as f32)
     }
     pub fn player_1_start(&self) -> (f32,f32) {
         (0.2*screen_width(), 0.2*screen_height())
