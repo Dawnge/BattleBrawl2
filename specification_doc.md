@@ -72,3 +72,41 @@ If the player is airbone, Dash sets the player's horizontal velocity to zero. An
 
 
 Player has orientation. Player has position. Player has grounded/airbone state
+
+
+## Multithreading Engine
+
+The game engine will be logically seperated into two parts:
+1. Update
+2. Render
+
+The Update function loop runs on the "main" thread will constantly update the game state based on the previous game state and user interaction. Furthermore, it will produce a RenderState that contains all information the renderer needs to display the game state. The Update function has its own frequency called Ticks Per Second (TPS). Additionally, it has to consider the frequency as a scaling factor for the internal logic such as Physics, aka. objects move x pixel/second, regardeless of the effective TPS.
+
+The Render function loop runs on a seperate thread, and *Interpolates* previous RenderStates to produce a time accurate prediction on what the game state would look like at the time of the Render execution. This requires the RenderState to be continuous to produce accurate results. Furthermore the render function can be unlocked to push as many frames as possible, or locked to a certain frame rate, and idle in between. The Render function has its own frequency called Frames Per Second (FPS).
+
+
+The engine Supports additional Multithreading via a Thread pool, that can accept jobs from the two loops. This approach incurrs minimal overhead and is therefore preffered to dynamic thread creation.
+
+
+
+### Visualization
+The figure below visualizes The Thread organization.
+
+```
+]|[-----Update-----]|[-----Update-----]|[---Update---]...
+[RenderState1]     [RenderState2]     [RenderState3]...
+[Render1]|[Render2]|[Render3]|[Render4]|[Render5]|[Render6]...
+
+Threadpool:
+Thread2[-------------------------Jobs-------------------------
+Thread3[-------------------------Jobs-------------------------
+Thread4[-------------------------Jobs-------------------------
+
+Render-RenderState dependency
+Render1(RenderState0, RenderState1)
+Render2(RenderState0, RenderState1)
+Render3(RenderState1, RenderState2)
+Render4(RenderState1, RenderState2)
+Render5(RenderState2, RenderState3)
+Render6(RenderState2, RenderState3)
+```
